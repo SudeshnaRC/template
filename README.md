@@ -1,51 +1,31 @@
-**Interested in contributing a code example?** Please let us know about your
-code example by submitting a new issue to this repository. Thanks!
 
-<!-- Before submitting your code, please delete the above code contribution
-instructions and this comment as they will not be relevant in your code 
-example README.md.-->
+# <vehicle_routing>
 
-# <demo_name>
+This program clusters a large number of cities before using Ocean Suite's LeapHybridSampler to optimise for shortest route through each city in each individual cluster. Another solution for the classic NP complete vehicle routing problem.
 
-Short blurb on what this demo does.
-
-If your demo produces a visualization, consider displaying an image of it here.
+TO DO:
+* Separate cities, cities_index and cities_lookup into one JSON file to be read into program. 
+* Allow user input for starting and ending city for each cluster. 
+* Integrate traffic alerts with traffic app API to update routing accordingly. 
 
 ![D-Wave Logo](dwave_logo.png)
+![Cities Clustering](twentyone_cities_clustered.png)
 
 ## Usage
 
-A simple command that runs the demo. For example,
-
 ```bash
-python <demo_name>.py
+python multipleTSP.py
 ```
 
 ## Code Overview
 
-A general overview of how the code works.
-
-Prefer bite-sized descriptions in bullet points:
-
-* Here's an example bullet point
-
 ## Code Specifics
 
-Notable parts of the code implementation.
-
-This is the place to:
-
-* Highlight a part of the code implementation
-* Talk about unusual or potentially difficult parts of the code
-* Explain a code decision
-
-Note: there is no need to repeat everything that is already well-documented in
-the code.
+Notable parts of the code implementation. (TO DO)
 
 ## References
 
-A. Person, "Title of Amazing Information", [short link
-name](https://example.com/)
+Scikit Learn, "K-Means clustering", [sklearn clustering algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)
 
 ## License
 
