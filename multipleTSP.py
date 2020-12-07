@@ -43,17 +43,6 @@ chainstrength = 1
 
 ## Clustering Preprocess
 
-class Coordinate:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-        # coordinate labels for groups red, green, and blue
-        label = "{0},{1}_".format(x, y)
-        self.r = label + "r"
-        self.g = label + "g"
-        self.b = label + "b"
-
 def lat_lon_distance(a, b):
     """Calculates distance between two latitude-longitude coordinates."""
     R = 3963  # radius of Earth (miles)
@@ -62,27 +51,6 @@ def lat_lon_distance(a, b):
     return math.acos(math.sin(lat1) * math.sin(lat2) +
                      math.cos(lat1) * math.cos(lat2) * math.cos(lon1 - lon2)) * R
 
-def get_distance(a, b):
-    R = 3963  # radius of Earth (miles)
-    lat1, lon1 = math.radians(a.x), math.radians(b.x)
-    lat2, lon2 = math.radians(a.y), math.radians(b.y)
-    return math.acos(math.sin(lat1) * math.sin(lat2) +
-                     math.cos(lat1) * math.cos(lat2) * math.cos(lon1 - lon2)) * R
-
-
-def get_max_distance(coordinates):
-    max_distance = 0
-    for i, coord0 in enumerate(coordinates[:-1]):
-        for coord1 in coordinates[i+1:]:
-            distance = get_distance(coord0, coord1)
-            max_distance = max(max_distance, distance)
-
-    return max_distance
-
-def get_cmap(n, name='hsv'):
-    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct 
-    RGB color; the keyword argument name must be a standard mpl colormap name.'''
-    return plt.cm.get_cmap(name, n)
 
 def clustering(scattered_points,filename):
     kmeans = KMeans(n_clusters = 8, random_state = 42, init = 'k-means++', n_init = 10, max_iter=30, algorithm='full').fit(scattered_points)
@@ -99,75 +67,11 @@ def clustering(scattered_points,filename):
                 groupings[key].append(scattered_points[i])
                 
 
-    print(groupings)
+    #print(groupings)
 
     visualize_groupings(groupings, filename)
 
     return groupings
-    
-def cluster_points(scattered_points, filename):
-    # Set up problem
-    # Note: max_distance gets used in division later on. Hence, the max(.., 1)
-    #   is used to prevent a division by zero
-    coordinates = [Coordinate(x, y) for x, y in scattered_points]
-    max_distance = max(get_max_distance(coordinates), 1)
-
-    # Build constraints
-    csp = dwavebinarycsp.ConstraintSatisfactionProblem(dwavebinarycsp.BINARY)
-
-    # Apply constraint: coordinate can only be in one colour group
-    choose_one_group = {(0, 0, 1), (0, 1, 0), (1, 0, 0)}
-    for coord in coordinates:
-        csp.add_constraint(choose_one_group, (coord.r, coord.g, coord.b))
-
-    # Build initial BQM
-    bqm = dwavebinarycsp.stitch(csp)
-
-    # Edit BQM to bias for close together points to share the same color
-    for i, coord0 in enumerate(coordinates[:-1]):
-        for coord1 in coordinates[i+1:]:
-            # Set up weight
-            d = get_distance(coord0, coord1) / max_distance  # rescale distance
-            weight = -math.cos(d*math.pi)
-
-            # Apply weights to BQM
-            bqm.add_interaction(coord0.r, coord1.r, weight)
-            bqm.add_interaction(coord0.g, coord1.g, weight)
-            bqm.add_interaction(coord0.b, coord1.b, weight)
-
-    # Edit BQM to bias for far away points to have different colors
-    for i, coord0 in enumerate(coordinates[:-1]):
-        for coord1 in coordinates[i+1:]:
-            # Set up weight
-            # Note: rescaled and applied square root so that far off distances
-            #   are all weighted approximately the same
-            d = math.sqrt(get_distance(coord0, coord1) / max_distance)
-            weight = -math.tanh(d) * 0.1
-
-            # Apply weights to BQM
-            bqm.add_interaction(coord0.r, coord1.b, weight)
-            bqm.add_interaction(coord0.r, coord1.g, weight)
-            bqm.add_interaction(coord0.b, coord1.r, weight)
-            bqm.add_interaction(coord0.b, coord1.g, weight)
-            bqm.add_interaction(coord0.g, coord1.r, weight)
-            bqm.add_interaction(coord0.g, coord1.b, weight)
-
-# Submit problem to D-Wave sampler
-    sampler = EmbeddingComposite(DWaveSampler(solver={'qpu': True}))
-    sampleset = sampler.sample(bqm, chain_strength=4, num_reads=1000)
-    best_sample = sampleset.first.sample
-
-    # Visualize graph problem
-    dwave.inspector.show(bqm, sampleset)
-
-    # Visualize solution
-    groupings = get_groupings(best_sample)
-    visualize_groupings_again(groupings, filename)
-    return groupings
-    # Print solution onto terminal
-    # Note: This is simply a more compact version of 'best_sample'
-    #print(groupings)
-## Clustering Preprocess End
 
 def plot_map(route,cities, cities_index, cities_lookup,filename):
 
@@ -431,7 +335,7 @@ for clust, points in citygroups.items():
         sample = next(iter(resp))
 
         sample1 = iter(resp)
-        print('{}'.format(', '.join(map(str, sample))))
+        #print('{}'.format(', '.join(map(str, sample))))
 
 
         #print("This is the sample:",sample)
